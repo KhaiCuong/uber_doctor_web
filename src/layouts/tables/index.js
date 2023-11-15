@@ -28,19 +28,25 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 
 // Data
-import authorsTableData from "layouts/tables/data/authorsTableData";
-import projectsTableData from "layouts/tables/data/projectsTableData";
+// import authorsTableData from "layouts/tables/data/authorsTableData";
+// import projectsTableData from "layouts/tables/data/projectsTableData";
+import MDButton from "components/MDButton";
+import { Icon } from "@mui/material";
+import { Link } from "react-router-dom";
+import { useMaterialUIController } from "context";
+import ProtectRouter from "service/ProtectRouter";
 
 function Tables() {
-  const { columns, rows } = authorsTableData();
-  const { columns: pColumns, rows: pRows } = projectsTableData();
+  const [controller, dispatch] = useMaterialUIController();
+  const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
-          <Grid item xs={12}>
+    <ProtectRouter>
+      <DashboardLayout>
+        <DashboardNavbar />
+        <MDBox pt={6} pb={3} height="90vh">
+          <Grid container spacing={6}>
+            {/* <Grid item xs={12}>
             <Card>
               <MDBox
                 mx={2}
@@ -66,38 +72,69 @@ function Tables() {
                 />
               </MDBox>
             </Card>
-          </Grid>
-          <Grid item xs={12}>
-            <Card>
+          </Grid> */}
+            <Grid item xs={12}>
               <MDBox
                 mx={2}
                 mt={-3}
                 py={3}
                 px={2}
                 variant="gradient"
-                bgColor="info"
+                bgColor={sidenavColor}
                 borderRadius="lg"
-                coloredShadow="info"
+                coloredShadow="secondary"
               >
-                <MDTypography variant="h6" color="white">
-                  Projects Table
+                <MDTypography
+                  variant="h6"
+                  color="white"
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    Patients Table&ensp;<Icon fontSize="small">accessible</Icon>
+                  </div>
+
+                  <Link to="patients" className="text-light">
+                    <MDButton variant="outlined" color="light" size="small">
+                      view all
+                    </MDButton>
+                  </Link>
                 </MDTypography>
               </MDBox>
-              <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: pColumns, rows: pRows }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
+            </Grid>
+
+            <Grid item xs={12}>
+              <MDBox
+                mx={2}
+                mt={-3}
+                py={3}
+                px={2}
+                variant="gradient"
+                bgColor={sidenavColor}
+                borderRadius="lg"
+                coloredShadow="secondary"
+              >
+                <MDTypography
+                  variant="h6"
+                  color="white"
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    Doctor Table&ensp;<Icon fontSize="small">medication_liquid</Icon>
+                  </div>
+
+                  <Link to="patients" className="text-light">
+                    <MDButton variant="outlined" color="light" size="small">
+                      view all
+                    </MDButton>
+                  </Link>
+                </MDTypography>
               </MDBox>
-            </Card>
+            </Grid>
           </Grid>
-        </Grid>
-      </MDBox>
-      <Footer />
-    </DashboardLayout>
+        </MDBox>
+        <Footer />
+      </DashboardLayout>
+    </ProtectRouter>
   );
 }
 

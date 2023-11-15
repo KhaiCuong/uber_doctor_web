@@ -47,7 +47,11 @@ import SignUp from "layouts/authentication/sign-up";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
+import Patients from "layouts/tables/listTable/patients";
+import PatientEdit from "layouts/tables/listTable/patients/edit";
+import PatientCreate from "layouts/tables/listTable/patients/create";
 
+const token = localStorage.getItem("token");
 const routes = [
   {
     type: "collapse",
@@ -74,7 +78,6 @@ const routes = [
     component: <Billing />,
   },
   {
-    type: "collapse",
     name: "RTL",
     key: "rtl",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
@@ -98,7 +101,6 @@ const routes = [
     component: <Profile />,
   },
   {
-    type: "collapse",
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
@@ -112,6 +114,27 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/authentication/sign-up",
     component: <SignUp />,
+  },
+  {
+    name: "Patient Table",
+    key: "patients",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/patients",
+    component: <Patients />,
+  },
+  {
+    name: "Patient Edit",
+    key: "patients",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/patients/edit/:id",
+    component: <PatientEdit />,
+  },
+  {
+    name: "Patient Create",
+    key: "patients",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/patients/create",
+    component: <PatientCreate />,
   },
 ];
 

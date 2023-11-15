@@ -66,13 +66,13 @@ function Footer({ company, links }) {
             favorite
           </Icon>
         </MDBox>
-        by
-        <Link href={href} target="_blank">
+        by Group 2
+        {/* <Link href={href} target="_blank">
           <MDTypography variant="button" fontWeight="medium">
             &nbsp;{name}&nbsp;
           </MDTypography>
         </Link>
-        for a better web.
+        for a better web. */}
       </MDBox>
       <MDBox
         component="ul"
