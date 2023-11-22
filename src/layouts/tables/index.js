@@ -130,6 +130,34 @@ function Tables() {
                 </MDTypography>
               </MDBox>
             </Grid>
+            <Grid item xs={12}>
+              <MDBox
+                mx={2}
+                mt={-3}
+                py={3}
+                px={2}
+                variant="gradient"
+                bgColor={sidenavColor}
+                borderRadius="lg"
+                coloredShadow="secondary"
+              >
+                <MDTypography
+                  variant="h6"
+                  color="white"
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    Booking Table&ensp;<Icon fontSize="small"></Icon>
+                  </div>
+
+                  <Link to="bookings" className="text-light">
+                    <MDButton variant="outlined" color="light" size="small">
+                      view all
+                    </MDButton>
+                  </Link>
+                </MDTypography>
+              </MDBox>
+            </Grid>
           </Grid>
         </MDBox>
         <Footer />

@@ -51,6 +51,10 @@ import Patients from "layouts/tables/listTable/patients";
 import PatientEdit from "layouts/tables/listTable/patients/edit";
 import PatientCreate from "layouts/tables/listTable/patients/create";
 
+import Bookings from "layouts/tables/listTable/bookings";
+import BookingEdit from "layouts/tables/listTable/bookings/edit";
+import BookingCreate from "layouts/tables/listTable/bookings/create";
+
 const token = localStorage.getItem("token");
 const routes = [
   {
@@ -135,6 +139,27 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/tables/patients/create",
     component: <PatientCreate />,
+  },
+  {
+    name: "Booking Table",
+    key: "bookings",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/bookings",
+    component: <Bookings />,
+  },
+  {
+    name: "Booking Edit",
+    key: "bookings",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/bookings/edit/:id",
+    component: <BookingEdit />,
+  },
+  {
+    name: "Booking Create",
+    key: "patients",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/bookings/create",
+    component: <BookingCreate />,
   },
 ];
 
