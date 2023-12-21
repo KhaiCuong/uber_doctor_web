@@ -122,7 +122,7 @@ function Tables() {
                     Doctor Table&ensp;<Icon fontSize="small">medication_liquid</Icon>
                   </div>
 
-                  <Link to="patients" className="text-light">
+                  <Link to="doctors" className="text-light">
                     <MDButton variant="outlined" color="light" size="small">
                       view all
                     </MDButton>

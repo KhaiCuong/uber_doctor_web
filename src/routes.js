@@ -47,6 +47,7 @@ import SignUp from "layouts/authentication/sign-up";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
+
 import Patients from "layouts/tables/listTable/patients";
 import PatientEdit from "layouts/tables/listTable/patients/edit";
 import PatientCreate from "layouts/tables/listTable/patients/create";
@@ -54,6 +55,10 @@ import PatientCreate from "layouts/tables/listTable/patients/create";
 import Bookings from "layouts/tables/listTable/bookings";
 import BookingEdit from "layouts/tables/listTable/bookings/edit";
 import BookingCreate from "layouts/tables/listTable/bookings/create";
+import Doctors from "layouts/tables/listTable/doctor";
+import DoctorEdit from "layouts/tables/listTable/doctor/edit";
+import DoctorCreate from "layouts/tables/listTable/doctor/create";
+import DoctorDetail from "layouts/tables/listTable/doctor/detail";
 
 const token = localStorage.getItem("token");
 const routes = [
@@ -160,6 +165,34 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/tables/bookings/create",
     component: <BookingCreate />,
+  },
+  {
+    name: "Doctor Table",
+    key: "doctors",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/doctors",
+    component: <Doctors />,
+  },
+  {
+    name: "Doctor Edit",
+    key: "doctors",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/doctors/edit/:id",
+    component: <DoctorEdit />,
+  },
+  {
+    name: "Doctor Create",
+    key: "doctors",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/doctors/create",
+    component: <DoctorCreate />,
+  },
+  {
+    name: "Doctor Detail",
+    key: "doctors",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/doctors/detail/:id",
+    component: <DoctorDetail />,
   },
 ];
 

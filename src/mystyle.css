@@ -29,7 +29,16 @@ ul {
 }
 
 
-
+.text-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 800;
+}
 
 
 
@@ -100,3 +109,21 @@ ul {
 
 
 
+  .w-30 {
+    width: 30%;
+  }
+
+  .font-size-small {
+    font-size: 13px;
+  }
+
+  .my-selection-box{
+    height: 40px;
+    border-radius: 7px;
+  }
+
+  .my-selection-box:focus{
+    border-color: #2196F3;
+  }
+
+  

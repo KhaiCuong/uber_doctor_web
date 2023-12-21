@@ -29,7 +29,7 @@ import { PostPatient } from "service/ApiService";
 import ProtectRouter from "service/ProtectRouter";
 import { GetPatientList } from "service/ApiService";
 
-function PatientCreate() {
+function BookingCreate() {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const { id } = useParams();
@@ -344,4 +344,4 @@ function PatientCreate() {
   );
 }
 
-export default PatientCreate;
+export default BookingCreate;

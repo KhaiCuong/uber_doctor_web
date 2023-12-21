@@ -52,7 +52,7 @@ function BookingEdit() {
   };
 
   const handleBack = () => {
-    navigate("/tables/bookings");
+    this.props.history.goBack();
   };
 
   const handleEdit = (e) => {
