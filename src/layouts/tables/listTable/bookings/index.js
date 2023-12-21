@@ -61,7 +61,7 @@ function Bookings() {
                 <MDBox pt={3} height="90vh">
                   <DataTable
                     table={{ columns, rows }}
-                    isSorted={true}
+                    isSorted={false}
                     entriesPerPage={true}
                     showTotalEntries={true}
                     noEndBorder

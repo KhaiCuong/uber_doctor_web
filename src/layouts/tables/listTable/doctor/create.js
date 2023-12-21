@@ -18,26 +18,27 @@ import MDButton from "components/MDButton";
 import { Icon } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { GetPatientDetail } from "service/ApiService";
-import { PutPatient } from "service/ApiService";
 import Swal from "sweetalert2";
 
 // Css
 import "mystyle.css";
 import { useMaterialUIController } from "context";
-import { PostPatient } from "service/ApiService";
 import ProtectRouter from "service/ProtectRouter";
-import { GetPatientList } from "service/ApiService";
+import { PostDoctor, GetDepartmentList } from "service/ApiService";
+import { GetDoctorList } from "service/ApiService";
 
-function PatientCreate() {
+function DoctorCreate() {
   const [controller, dispatch] = useMaterialUIController();
-  const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
+  const { sidenavColor } = controller;
+  const formData = new FormData();
+
   const { id } = useParams();
   const [data, setData] = useState([]);
   const [stt, setStt] = useState(true);
   const navigate = useNavigate();
   const [phoneList, setPhoneList] = useState([]);
   const [mailList, setMailList] = useState([]);
+  const [list, setList] = useState([]);
 
   const [errors, setErrors] = useState({});
   const validateForm = (data) => {
@@ -49,11 +50,6 @@ function PatientCreate() {
     } else if (mailList.includes(data.email)) {
       errors.email = "email is already in use";
     }
-    if (!data.password) {
-      errors.password = "password is required";
-    } else if (data.password.length < 6 || data.password.length > 20) {
-      errors.password = "Password must be between 6 - 20 characters";
-    }
     if (!data.fullName) {
       errors.fullName = "Fullname is required";
     } else if (data.fullName.length < 6 || data.fullName.length > 20) {
@@ -61,20 +57,26 @@ function PatientCreate() {
     }
     if (!data.phoneNumber) {
       errors.phoneNumber = "Phone Number is required";
-    } else if (data.phoneNumber.length != 10) {
-      errors.phoneNumber = "Phone Number in viet nam must be have 10 number";
-    } else if (data.phoneNumber[0] != 0) {
-      errors.phoneNumber = "Phone Number must be start with number 0";
+    } else if (data.phoneNumber.length < 9) {
+      errors.phoneNumber = "Phone Number in viet nam must be have 9 or 10 number";
     } else if (phoneList.includes(data.phoneNumber)) {
       errors.phoneNumber = "Phone number is already in use";
     }
-    if (!data.address) {
-      errors.address = "address is required";
-    } else if (data.address.length < 5 || data.address.length > 50) {
-      errors.address = "address must be between 5 - 50 characters";
+    if (!data.exp) {
+      errors.exp = "Years of Experience is required";
+    } else if (data.exp.length < 0 || data.exp.length > 100) {
+      errors.exp = "Years of Experience must be between 0 - 100";
+    }
+    if (!data.price) {
+      errors.price = "Consultation fee per hour is required";
+    } else if (data.price.length < 0 || data.price.length > 10000000) {
+      errors.price = "Consultation fee per hour must be between 0 - 10000000";
     }
     if (data.rate < 0 || data.rate > 5) {
       errors.rate = "rate must be between 0 - 5";
+    }
+    if (typeof data.department_id === "undefined") {
+      errors.department_id = "Please choose Spectiality";
     }
     return errors;
   };
@@ -96,24 +98,46 @@ function PatientCreate() {
     let isCheked = e.target.checked;
     console.log("isCheked", isCheked);
     if (isCheked) {
-      setData({ ...data, status: true });
-      setStt(true);
+      setData({ ...data, accepted: true });
     } else {
-      setData({ ...data, status: false });
-      setStt(false);
+      setData({ ...data, accepted: false });
     }
   };
 
   const handleBack = () => {
-    navigate("/tables/patients");
+    this.props.history.goBack();
   };
 
-  const displaySelectedImage = (event, elementId) => {
+  const handelCombobox = (e) => {
+    var selectElement = document.getElementById("department_id");
+    var selectedOption = selectElement.options[selectElement.selectedIndex];
+    var departmentID = selectElement.value;
+    var departmentName = selectedOption.text;
+
+    setErrors({
+      ...errors,
+      department_id: "",
+    });
+
+    setData({
+      ...data,
+      spectiality: departmentName,
+      department_id: departmentID,
+    });
+  };
+
+  //upload Image
+  const handleFileChange = (event, elementId) => {
+    // const files = event.target.files;
+    formData.append("image", event.target.files[0]);
+
+    setData({
+      ...data,
+      image: event.target.files[0],
+    });
+
     const selectedImage = document.getElementById(elementId);
     const fileInput = event.target;
-
-    console.log("event", fileInput);
-
     if (fileInput.files && fileInput.files[0]) {
       const reader = new FileReader();
 
@@ -129,9 +153,29 @@ function PatientCreate() {
     e.preventDefault();
     const newErrors = validateForm(data);
     if (Object.keys(newErrors).length > 0) {
+      console.log("err", errors.department_id);
       setErrors(newErrors);
       return;
     } else {
+      formData.append("fullName", data.fullName);
+      formData.append("phoneNumber", data.phoneNumber);
+      formData.append("email", data.email);
+      formData.append("spectiality", data.spectiality);
+      formData.append("price", data.price);
+      formData.append("exp", data.exp);
+      formData.append("rate", data.rate);
+      if (typeof data.accepted === "undefined" || data.accepted == null) {
+        formData.append("accepted", false);
+      } else {
+        formData.append("accepted", data.accepted);
+      }
+
+      if (data.department_id != null && typeof data.department_id != "undefined") {
+        formData.append("department_id", data.department_id);
+      }
+      if (data.image != null && typeof data.image != "undefined") {
+        formData.append("image", data.image);
+      }
       Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -143,10 +187,13 @@ function PatientCreate() {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const response = await PostPatient(data);
-            if (response.status === 201) {
+            const response = await PostDoctor(formData);
+
+            console.log("response.status", response.status);
+
+            if (response.status === 200) {
               Swal.fire("Created!", "Your Information has been Created.", "success");
-              navigate("/tables/patients");
+              navigate("/tables/doctors");
             }
           } catch (error) {
             console.log("err", error);
@@ -158,9 +205,19 @@ function PatientCreate() {
   };
 
   useEffect(() => {
-    const fetchDataPatient = async () => {
+    const GetSpecilityList = async () => {
       try {
-        const response = await GetPatientList();
+        const response = await GetDepartmentList();
+        if (response.status === 200) {
+          setList(response.data);
+        }
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    const fetchDataDoctor = async () => {
+      try {
+        const response = await GetDoctorList();
         if (response.status === 200) {
           const phoneNumArr = [];
           const emailArr = [];
@@ -168,8 +225,6 @@ function PatientCreate() {
             phoneNumArr[i] = response.data[i].phoneNumber;
             emailArr[i] = response.data[i].email;
           }
-
-          console.log("emailArr", emailArr);
           setPhoneList(phoneNumArr);
           setMailList(emailArr);
         }
@@ -177,7 +232,8 @@ function PatientCreate() {
         console.log("error", error);
       }
     };
-    fetchDataPatient();
+    fetchDataDoctor();
+    GetSpecilityList();
   }, []);
 
   return (
@@ -203,11 +259,11 @@ function PatientCreate() {
                     color="white"
                     className="d-flex justify-content-between align-items-center"
                   >
-                    <Link to="/tables/patients" className="text-light">
+                    <Link to="/tables/doctors" className="text-light">
                       <Icon>arrow_back_ios_new</Icon>
                     </Link>
                     <MDTypography variant="h6" color="white">
-                      CREATE NEW PATIENT
+                      CREATE NEW DOTOR
                     </MDTypography>
                     <Icon fontSize="2px">person_add</Icon>
                   </MDTypography>
@@ -220,13 +276,13 @@ function PatientCreate() {
                         <div className="mb-4 d-flex justify-content-center">
                           <img
                             id="selectedImage"
-                            src="https://assets.dryicons.com/uploads/icon/svg/9872/ab3c0a16-6f14-4817-a30b-443273de911d.svg"
+                            src="https://mdbootstrap.com/img/Photos/Others/placeholder.jpg"
                             alt="example placeholder"
                             className="w-100"
-                            style={{ height: "400px" }}
+                            style={{ height: "300px" }}
                           />
                         </div>
-                        {/* <div className="d-flex justify-content-center">
+                        <div className="d-flex justify-content-center">
                           <MDButton variant="gradient" color="info">
                             <label
                               className="form-label text-white m-1 d-flex justify-content-center"
@@ -238,10 +294,10 @@ function PatientCreate() {
                               type="file"
                               className="form-control d-none"
                               id="customFile1"
-                              onChange={(event) => displaySelectedImage(event, "selectedImage")}
+                              onChange={(event) => handleFileChange(event, "selectedImage")}
                             />
                           </MDButton>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                     <div className="col-sm-6 col-md-8">
@@ -251,6 +307,7 @@ function PatientCreate() {
                           type="text"
                           label="Fullname"
                           fullWidth
+                          value={data.fullName ? data.fullName : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
@@ -263,6 +320,7 @@ function PatientCreate() {
                           type="number"
                           label="Phone number"
                           fullWidth
+                          value={data.phoneNumber ? data.phoneNumber : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
@@ -275,6 +333,7 @@ function PatientCreate() {
                           type="email"
                           label="Email"
                           fullWidth
+                          value={data.email ? data.email : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
@@ -283,26 +342,31 @@ function PatientCreate() {
                       </MDBox>
                       <MDBox mb={2}>
                         <MDInput
-                          name="password"
-                          type="password"
-                          label="Password"
+                          name="exp"
+                          type="text"
+                          label="Years of Experience"
                           fullWidth
+                          value={data.exp ? data.exp : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
-                          {errors.password}
+                          {errors.exp}
                         </span>
                       </MDBox>
+
                       <MDBox mb={2}>
                         <MDInput
-                          name="address"
-                          type="text"
-                          label="Address"
+                          name="price"
+                          type="number"
+                          min="0"
+                          max="9999999"
+                          label="Consultation fee per hour"
                           fullWidth
+                          value={data.price ? data.price : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
-                          {errors.address}
+                          {errors.price}
                         </span>
                       </MDBox>
                       <MDBox mb={2}>
@@ -312,6 +376,7 @@ function PatientCreate() {
                           label="Rate"
                           min="0"
                           max="5"
+                          value={data.rate ? data.rate : ""}
                           onChange={handleChangeInput}
                           fullWidth
                         />
@@ -319,13 +384,52 @@ function PatientCreate() {
                           {errors.rate}
                         </span>
                       </MDBox>
+                      <MDBox mb={2}>
+                        <label
+                          htmlFor="department_id"
+                          className="w-100 font-size-small text-secondary"
+                        >
+                          Choose a Spectiality:
+                        </label>
+                        <select
+                          name="department_id"
+                          id="department_id"
+                          className="w-100 border my-selection-box font-size-small"
+                          onChange={handelCombobox}
+                        >
+                          <option value="">Choose your Spectiality</option>
+                          {list.length > 0 ? (
+                            list.map((item, index) => {
+                              return (
+                                <option
+                                  key={index}
+                                  value={item.id}
+                                  selected={data.spectiality === item.departmentName}
+                                >
+                                  {item.departmentName}
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <div>No Spectiality to show</div>
+                          )}
+                        </select>
+                        <span style={{ fontSize: "12px" }} className="text-danger">
+                          {errors.department_id}
+                        </span>
+                      </MDBox>
                       <div className="d-flex justify-content-between align-items-center">
                         <MDBox mb={2}>
                           <MDTypography variant="button" fontWeight="regular" color="text">
-                            Status :&ensp;&ensp;
+                            Accept :&ensp;&ensp;
                           </MDTypography>
                           <label className="switch ml-4">
-                            <input type="checkbox" onChange={handleChangeStatus} checked={stt} />
+                            <input
+                              type="checkbox"
+                              onChange={handleChangeStatus}
+                              name="accepted"
+                              checked={data.accepted}
+                            />
                             <span className="slider round "></span>
                           </label>
                         </MDBox>
@@ -346,4 +450,4 @@ function PatientCreate() {
   );
 }
 
-export default PatientCreate;
+export default DoctorCreate;

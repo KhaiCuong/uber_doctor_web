@@ -17,21 +17,25 @@ import MDButton from "components/MDButton";
 import { Icon } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { GetPatientDetail } from "service/ApiService";
-import { PutPatient } from "service/ApiService";
+import { PutDoctor, DeleteDoctorByID, GetDoctorDetail } from "service/ApiService";
 import Swal from "sweetalert2";
 
 // Css
 import "mystyle.css";
 import { useMaterialUIController } from "context";
 import ProtectRouter from "service/ProtectRouter";
-import { DeletePatientByID } from "service/ApiService";
+import { GetDepartmentList } from "service/ApiService";
 
-function PatientEdit() {
+function DoctorEdit() {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const { id } = useParams();
   const [data, setData] = useState([]);
+  const [list, setList] = useState([]);
+
+  const [img, setImg] = useState("https://mdbootstrap.com/img/Photos/Others/placeholder.jpg");
+
+  const formData = new FormData();
 
   const navigate = useNavigate();
 
@@ -43,11 +47,6 @@ function PatientEdit() {
     } else if (!/\S+@\S+\.\S+/.test(data.email)) {
       errors.email = "Invalid email format";
     }
-    if (!data.password) {
-      errors.password = "password is required";
-    } else if (data.password.length < 6 || data.password.length > 20) {
-      errors.password = "Password must be between 6 - 20 characters";
-    }
     if (!data.fullName) {
       errors.fullName = "Fullname is required";
     } else if (data.fullName.length < 6 || data.fullName.length > 20) {
@@ -55,18 +54,24 @@ function PatientEdit() {
     }
     if (!data.phoneNumber) {
       errors.phoneNumber = "Phone Number is required";
-    } else if (data.phoneNumber.length != 10) {
-      errors.phoneNumber = "Phone Number in viet nam must be have 10 number";
-    } else if (data.phoneNumber[0] != 0) {
-      errors.phoneNumber = "Phone Number must be start with number 0";
+    } else if (data.phoneNumber.length < 9) {
+      errors.phoneNumber = "Phone Number in viet nam must be have 9 or 10 number";
     }
-    if (!data.address) {
-      errors.address = "address is required";
-    } else if (data.address.length < 5 || data.address.length > 50) {
-      errors.address = "address must be between 5 - 50 characters";
+    if (!data.exp) {
+      errors.exp = "Years of Experience is required";
+    } else if (data.exp.length < 0 || data.exp.length > 100) {
+      errors.exp = "Years of Experience must be between 0 - 100";
+    }
+    if (!data.price) {
+      errors.price = "Consultation fee per hour is required";
+    } else if (data.price.length < 0 || data.price.length > 10000000) {
+      errors.price = "Consultation fee per hour must be between 0 - 10000000";
     }
     if (data.rate < 0 || data.rate > 5) {
       errors.rate = "rate must be between 0 - 5";
+    }
+    if (data.department_id) {
+      errors.department_id = "Please choose Spectiality";
     }
     return errors;
   };
@@ -88,23 +93,79 @@ function PatientEdit() {
     let isCheked = e.target.checked;
     console.log("isCheked", isCheked);
     if (isCheked) {
-      setData({ ...data, status: true });
+      setData({ ...data, accepted: true });
     } else {
-      setData({ ...data, status: false });
+      setData({ ...data, accepted: false });
     }
   };
 
   const handleBack = () => {
-    navigate("/tables/patients");
+    navigate("/tables/doctors");
+  };
+
+  const handelCombobox = (e) => {
+    var selectElement = document.getElementById("department_id");
+    var selectedOption = selectElement.options[selectElement.selectedIndex];
+    var departmentID = selectElement.value;
+    var departmentName = selectedOption.text;
+
+    setData({
+      ...data,
+      spectiality: departmentName,
+      department_id: departmentID,
+    });
+  };
+
+  //upload Image
+  const handleFileChange = (event, elementId) => {
+    // const files = event.target.files;
+    formData.append("image", event.target.files[0]);
+
+    setData({
+      ...data,
+      image: event.target.files[0],
+    });
+    console.log("event.target.files[0]", event.target.files[0]);
+
+    const selectedImage = document.getElementById(elementId);
+    const fileInput = event.target;
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        selectedImage.src = e.target.result;
+      };
+
+      reader.readAsDataURL(fileInput.files[0]);
+    }
   };
 
   const handleEdit = (e) => {
     e.preventDefault();
+    console.log("update1");
+
     const newErrors = validateForm(data);
     if (Object.keys(newErrors).length > 0) {
+      console.log("update2");
+
       setErrors(newErrors);
       return;
     } else {
+      formData.append("fullName", data.fullName);
+      formData.append("phoneNumber", data.phoneNumber);
+      formData.append("email", data.email);
+      formData.append("spectiality", data.spectiality);
+      formData.append("price", data.price);
+      formData.append("exp", data.exp);
+      formData.append("rate", data.rate);
+      formData.append("accepted", data.accepted);
+      if (data.department_id != null && data.department_id != undefined) {
+        formData.append("department_id", data.department_id);
+      }
+      if (data.image != null && data.image != undefined) {
+        formData.append("image", data.image);
+      }
+
       Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -116,13 +177,14 @@ function PatientEdit() {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const response = await PutPatient(id, data);
+            const response = await PutDoctor(id, formData);
             if (response.status === 200) {
               Swal.fire("Updated!", "Your Information has been updated.", "success");
-              navigate("/tables/patients");
+              navigate("/tables/doctors");
             }
           } catch (error) {
             console.log("err", error);
+            console.log("errr");
           }
         }
       });
@@ -142,7 +204,7 @@ function PatientEdit() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await DeletePatientByID(id);
+          const response = await DeleteDoctorByID(id);
           if (response.status === 200) {
             Swal.fire("Deleted!", "Your data has been deleted.", "success");
             handleBack();
@@ -155,18 +217,47 @@ function PatientEdit() {
   };
 
   useEffect(() => {
-    const GetPatientById = async () => {
+    const GetDoctorById = async () => {
       try {
-        const response = await GetPatientDetail(id);
+        const response = await GetDoctorDetail(id);
         console.log("response.status", response);
         if (response.status === 200) {
           setData(response.data);
+          console.log("response.data.imagePath", response.data.imagePath);
+
+          if (response.data.imagePath != null && response.data.imagePath != "") {
+            console.log("img", `http://localhost:8080/${response.data.imagePath}`);
+            setImg(`http://localhost:8080/${response.data.imagePath}`);
+          }
         }
       } catch (error) {
         console.log("error", error);
       }
     };
-    GetPatientById();
+
+    const GetSpecilityList = async () => {
+      try {
+        const response = await GetDepartmentList();
+        // console.log("response.status", response);
+        if (response.status === 200) {
+          setList(response.data);
+          // console.log("response.data.imagePath", response.data.imagePath);
+        }
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    GetDoctorById();
+    GetSpecilityList();
+
+    console.log("list", list);
+    // list.map((item) => {
+    //  if(data.spectiality === item.departmentName) {
+    //   setData({
+    //     ...data,
+    //     department_id: item.id,
+    //   });
+    //  }
   }, []);
 
   return (
@@ -192,10 +283,10 @@ function PatientEdit() {
                     color="white"
                     className="d-flex justify-content-between align-items-center"
                   >
-                    <Link to="/tables/patients" className="text-light">
+                    <Link to="/tables/doctors" className="text-light">
                       <Icon>arrow_back_ios_new</Icon>
                     </Link>
-                    EDIT PATIENT
+                    EDIT DOCTOR
                     <Icon>edit</Icon>
                   </MDTypography>
                 </MDBox>
@@ -203,20 +294,24 @@ function PatientEdit() {
                 <MDBox pt={4} pb={3} px={3}>
                   <div className="row">
                     <div className="col-sm-6 col-md-4">
-                      <img
-                        className="w-100 rounded"
-                        height="400px"
-                        src="https://assets.dryicons.com/uploads/icon/svg/9872/ab3c0a16-6f14-4817-a30b-443273de911d.svg"
-                      ></img>
-                      {/* <div className="mt-3">
+                      <div className="mb-4 d-flex justify-content-center">
+                        <img
+                          id="selectedImage"
+                          src={img}
+                          alt="example placeholder"
+                          className="w-100"
+                          style={{ height: "300px" }}
+                        />
+                      </div>
+                      <div className="mt-3">
                         <label>New image:</label>
                         <input
-                          name="image"
+                          name="imagePath"
                           type="file"
                           // value={data.phoneNumber ? data.phoneNumber : ""}
-                          // onChange={handleChangeInput}
+                          onChange={(event) => handleFileChange(event, "selectedImage")}
                         />
-                      </div> */}
+                      </div>
                     </div>
 
                     <div className="col-sm-6 col-md-8">
@@ -263,28 +358,31 @@ function PatientEdit() {
                       </MDBox>
                       <MDBox mb={2}>
                         <MDInput
-                          name="password"
-                          type="password"
-                          label="Password"
+                          name="exp"
+                          type="text"
+                          label="Years of Experience"
                           fullWidth
-                          value={data.password ? data.password : ""}
+                          value={data.exp ? data.exp : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
-                          {errors.password}
+                          {errors.exp}
                         </span>
                       </MDBox>
+
                       <MDBox mb={2}>
                         <MDInput
-                          name="address"
-                          type="text"
-                          label="Address"
+                          name="price"
+                          type="number"
+                          min="0"
+                          max="9999999"
+                          label="Consultation fee per hour"
                           fullWidth
-                          value={data.address ? data.address : ""}
+                          value={data.price ? data.price : ""}
                           onChange={handleChangeInput}
                         />
                         <span style={{ fontSize: "12px" }} className="text-danger">
-                          {errors.address}
+                          {errors.price}
                         </span>
                       </MDBox>
                       <MDBox mb={2}>
@@ -302,21 +400,63 @@ function PatientEdit() {
                           {errors.rate}
                         </span>
                       </MDBox>
+                      <MDBox mb={2}>
+                        {/* <MDInput
+                          name="exp"
+                          type="text"
+                          label="Years of Experience"
+                          fullWidth
+                          value={data.exp ? data.exp : ""}
+                          onChange={handleChangeInput}
+                        /> */}
+                        <label
+                          htmlFor="department_id"
+                          className="w-100 font-size-small text-secondary font-size-small"
+                        >
+                          Choose a Spectiality:
+                        </label>
+                        <select
+                          name="department_id"
+                          id="department_id"
+                          className="w-100 border my-selection-box"
+                          onChange={handelCombobox}
+                        >
+                          {list.length > 0 ? (
+                            list.map((item, index) => {
+                              return (
+                                <option
+                                  key={index}
+                                  value={item.id}
+                                  selected={data.spectiality === item.departmentName}
+                                >
+                                  {item.departmentName}
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <div>No Spectiality to show</div>
+                          )}
+                        </select>
+                        <span style={{ fontSize: "12px" }} className="text-danger">
+                          {errors.department_id}
+                        </span>
+                      </MDBox>
                       <div className="d-flex justify-content-between align-items-center">
                         <MDBox mb={2}>
                           <MDTypography variant="button" fontWeight="regular" color="text">
-                            Status :&ensp;&ensp;
+                            Accept :&ensp;&ensp;
                           </MDTypography>
                           <label className="switch ml-4">
                             <input
                               type="checkbox"
                               onChange={handleChangeStatus}
-                              checked={data.status}
+                              name="accepted"
+                              checked={data.accepted}
                             />
                             <span className="slider round "></span>
                           </label>
                         </MDBox>
-                        <div className="mt-4 mb-4 d-flex justify-content-between align-items-center w-25">
+                        <div className="mt-4 mb-4 d-flex justify-content-between align-items-center w-30">
                           <MDButton variant="gradient" color="info" onClick={handleEdit}>
                             <Icon>edit</Icon> Edit
                           </MDButton>
@@ -344,4 +484,4 @@ function PatientEdit() {
   );
 }
 
-export default PatientEdit;
+export default DoctorEdit;

@@ -20,14 +20,17 @@ import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
 import MDBadge from "components/MDBadge";
-import { FilterContext } from "context/FilterContext";
+import "mystyle.css";
 
-import { GetPatientList } from "../../../service/ApiService";
+import { GetDoctorList, PutAccept } from "../../../service/ApiService";
 
 // Images
 import team2 from "assets/images/team-2.jpg";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { FilterContext } from "context/FilterContext";
+import { Button } from "@mui/material";
+import Swal from "sweetalert2";
 
 export default function data() {
   const { fKey } = useContext(FilterContext); // get information from context
@@ -53,39 +56,60 @@ export default function data() {
     </MDBox>
   );
 
-  // Product
   const [data, setData] = useState([]);
+  const [render, setRender] = useState(true);
 
   useEffect(() => {
     const fetchDataPatient = async () => {
       try {
-        const response = await GetPatientList();
+        const response = await GetDoctorList();
         let newresponse = response.data.filter((col) => col.phoneNumber.includes(fKey));
 
         if (response.status === 200) {
           setData(newresponse);
         }
+        console.log("response", response.data);
       } catch (error) {
         console.log("error", error);
       }
     };
     fetchDataPatient();
-  }, [fKey]);
+  }, [fKey, render]);
+
+  function handelAccept(id) {
+    Swal.fire({
+      title: "Do you want to Accept?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await PutAccept(id);
+        if (response.status === 200) {
+          setRender(!render);
+        }
+      }
+    });
+  }
 
   return {
     columns: [
-      { Header: "FullName", accessor: "fullname", width: "30%", align: "left" },
-      { Header: "Phone Number", accessor: "phoneNumber", align: "right" },
+      { Header: "Fullname", accessor: "fullname", width: "30%", align: "left" },
+      { Header: "Phone", accessor: "phone", align: "right" },
       { Header: "Email", accessor: "email", align: "left" },
+      { Header: "Specialty", accessor: "specialty", align: "center" },
+      // { Header: "Experience ", accessor: "experience", align: "center" },
+      // { Header: "Hourly rate ", accessor: "price", align: "center" },
       { Header: "Rate", accessor: "rate", align: "center" },
-      { Header: "status", accessor: "status", align: "center" },
+      { Header: "Accepted", accessor: "accepted", align: "center" },
       { Header: "action", accessor: "action", align: "center" },
-      // { Header: "Address", accessor: "address", align: "center" },
     ],
-
     rows: data.map((item, index) => ({
       fullname: <Author image={team2} name={item.fullName} email={item.id} />,
-      phoneNumber: (
+      phone: (
         <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
           {item.phoneNumber}
         </MDTypography>
@@ -95,12 +119,32 @@ export default function data() {
           {item.email}
         </MDTypography>
       ),
+      specialty: (
+        <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+          {item.spectiality}
+        </MDTypography>
+      ),
+      specialty: (
+        <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+          {item.spectiality}
+        </MDTypography>
+      ),
+      // experience: (
+      //   <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+      //     {item.exp}
+      //   </MDTypography>
+      // ),
+      // price: (
+      //   <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+      //     {item.price}
+      //   </MDTypography>
+      // ),
       rate: <Job title={item.rate} name={item.rate} description="Star" />,
-      status: (
+      accepted: (
         <MDBox ml={-1}>
           <MDBadge
-            badgeContent={item.status === true ? "True" : "False"}
-            color={item.status === true ? "success" : "secondary"}
+            badgeContent={item.accepted === true ? "True" : "False"}
+            color={item.accepted === true ? "success" : "secondary"}
             variant="gradient"
             size="sm"
           />
@@ -108,34 +152,23 @@ export default function data() {
       ),
       action: (
         <MDTypography component="a" href="#" variant="caption" fontWeight="medium">
-          <Link to={"edit/" + item.id} className="text-secondary">
-            Edit
+          <button
+            className="text-success text-button"
+            hidden={item.accepted}
+            onClick={() => handelAccept(item.id)}
+          >
+            ACCEPT
+          </button>
+          <div> </div>
+          <Link to={"edit/" + item.id} className="text-Primary">
+            EDIT
+          </Link>
+          <div> </div>
+          <Link to={"detail/" + item.id} className="text-secondary">
+            DETAIL
           </Link>
         </MDTypography>
       ),
-      // address: (
-      //   <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-      //     {item.address}
-      //   </MDTypography>
-      // ),
     })),
   };
 }
-
-// rows: [
-//   {
-//     fullname: <Author image={team2} name="John Michael" email="john@creative-tim.com" />,
-//     rate: <Job title="Manager" description="Organization" />,
-//     status: (
-//       <MDBox ml={-1}>
-//         <MDBadge badgeContent="online" color="success" variant="gradient" size="sm" />
-//       </MDBox>
-//     ),
-//
-//     action: (
-//       <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-//         Edit
-//       </MDTypography>
-//     ),
-//   },
-// ],

@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useContext } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -39,6 +39,8 @@ import MDPagination from "components/MDPagination";
 import DataTableHeadCell from "examples/Tables/DataTable/DataTableHeadCell";
 import DataTableBodyCell from "examples/Tables/DataTable/DataTableBodyCell";
 
+import { FilterContext } from "context/FilterContext";
+
 function DataTable({
   entriesPerPage,
   canSearch,
@@ -48,11 +50,16 @@ function DataTable({
   isSorted,
   noEndBorder,
 }) {
+  const { fkey, setFKey } = useContext(FilterContext);
+
   const defaultValue = entriesPerPage.defaultValue ? entriesPerPage.defaultValue : 10;
   const entries = entriesPerPage.entries
     ? entriesPerPage.entries.map((el) => el.toString())
     : ["5", "10", "15", "20", "25"];
   const columns = useMemo(() => table.columns, [table]);
+
+  // const filterrows = table.rows.filter((col) => col.phoneNumber.includes(search));
+
   const data = useMemo(() => table.rows, [table]);
 
   const tableInstance = useTable(
@@ -81,7 +88,10 @@ function DataTable({
   } = tableInstance;
 
   // Set the default value for the entries per page when component mounts
-  useEffect(() => setPageSize(defaultValue || 10), [defaultValue]);
+  useEffect(() => {
+    setPageSize(defaultValue || 10), [defaultValue];
+    // setFKey(search);
+  }, []);
 
   // Set the entries per page value based on the select value
   const setEntriesPerPage = (value) => setPageSize(value);
@@ -109,10 +119,11 @@ function DataTable({
   const handleInputPaginationValue = ({ target: value }) => gotoPage(Number(value.value - 1));
 
   // Search input value state
-  const [search, setSearch] = useState(globalFilter);
+  const [search, setSearch] = useState("");
 
   // Search input state handle
   const onSearchChange = useAsyncDebounce((value) => {
+    // setFKey(value);
     setGlobalFilter(value || undefined);
   }, 100);
 
@@ -170,13 +181,16 @@ function DataTable({
           {canSearch && (
             <MDBox width="12rem" ml="auto">
               <MDInput
-                placeholder="Search..."
+                placeholder="Search with Phone Number"
                 value={search}
                 size="small"
                 fullWidth
                 onChange={({ currentTarget }) => {
-                  setSearch(search);
-                  onSearchChange(currentTarget.value);
+                  setSearch(currentTarget.value);
+                  setFKey(currentTarget.value);
+
+                  console.log("currentTarget.value", currentTarget.value);
+                  // onSearchChange(currentTarget.value);
                 }}
               />
             </MDBox>

@@ -28,18 +28,17 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 
 // Data
-import patientsTableData from "layouts/tables/data/patientsTableData";
+import doctorTableData from "layouts/tables/data/doctorTableData";
 import MDButton from "components/MDButton";
 import { Link } from "react-router-dom";
 import { Icon } from "@mui/material";
 import { useMaterialUIController } from "context";
 import ProtectRouter from "service/ProtectRouter";
 
-function Patients() {
-  const { columns, rows } = patientsTableData();
+function Doctors() {
+  const { columns, rows } = doctorTableData();
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
-
   return (
     <ProtectRouter>
       <DashboardLayout>
@@ -66,7 +65,7 @@ function Patients() {
                     <Link to="/tables" className="text-light">
                       <Icon>arrow_back_ios_new</Icon>
                     </Link>
-                    PATIENT TABLE
+                    DOTOR TABLE
                     <Link to="create" className="text-light  d-flex align-items-center">
                       <MDButton variant="outlined" color="light" size="small">
                         <Icon>add</Icon> Create new
@@ -74,14 +73,13 @@ function Patients() {
                     </Link>
                   </MDTypography>
                 </MDBox>
-                <MDBox pt={3} height="90vh">
+                <MDBox pt={3}>
                   <DataTable
                     table={{ columns, rows }}
                     isSorted={true}
                     entriesPerPage={true}
                     showTotalEntries={true}
                     canSearch={true}
-                    noEndBorder
                   />
                 </MDBox>
               </Card>
@@ -94,4 +92,4 @@ function Patients() {
   );
 }
 
-export default Patients;
+export default Doctors;
