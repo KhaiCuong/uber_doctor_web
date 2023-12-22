@@ -28,7 +28,7 @@ import { useMaterialUIController } from "context";
 import ProtectRouter from "service/ProtectRouter";
 import DataTable from "examples/Tables/DataTable";
 import bookingTableDoctorData from "layouts/tables/data/bookingTableDoctorData";
-import paymentTableData from "layouts/tables/data/paymentTableData";
+import paymentTableData from "layouts/tables/data/paymentsTableData";
 
 function DoctorDetail() {
   const [controller, dispatch] = useMaterialUIController();

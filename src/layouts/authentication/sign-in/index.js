@@ -119,9 +119,10 @@ function Basic() {
     }
     if (!dataLogin.password) {
       errors.password = "password is required";
-    } else if (dataLogin.password.length < 6 || dataLogin.password.length > 20) {
+    } else if (dataLogin.password.length < 2 || dataLogin.password.length > 20) {
       errors.password = "Password must be between 6 - 20 characters";
     }
+    //******** */
 
     return errors;
   };

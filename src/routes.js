@@ -59,6 +59,7 @@ import Doctors from "layouts/tables/listTable/doctor";
 import DoctorEdit from "layouts/tables/listTable/doctor/edit";
 import DoctorCreate from "layouts/tables/listTable/doctor/create";
 import DoctorDetail from "layouts/tables/listTable/doctor/detail";
+import Payments from "layouts/tables/listTable/payment";
 
 const token = localStorage.getItem("token");
 const routes = [
@@ -193,6 +194,13 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/tables/doctors/detail/:id",
     component: <DoctorDetail />,
+  },
+  {
+    name: "Payment Table",
+    key: "payments",
+    icon: <Icon fontSize="small">assignment</Icon>,
+    route: "/tables/payments",
+    component: <Payments />,
   },
 ];
 
